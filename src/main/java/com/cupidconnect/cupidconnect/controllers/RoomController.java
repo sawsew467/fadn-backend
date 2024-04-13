@@ -209,12 +209,7 @@ public class RoomController {
 
         int participantGenderId = participant.getGenderEntity().getId();
         int participantAge = calculateAge(String.valueOf(participant.getDob()));
-        System.out.println(currentUser.getEmail());
-        System.out.println(participant.getEmail());
-
-        System.out.println("currentUserGenderId: " + currentUserGenderId + " " + filterGenderParticipant);
-        System.out.println("currentUserGenderId: " + participantGenderId + " " + filterGenderCurrent);
-
+        
         if (currentUserGenderId == filterGenderParticipant && participantGenderId == filterGenderCurrent) {
             numberOfMatch++;
         }
