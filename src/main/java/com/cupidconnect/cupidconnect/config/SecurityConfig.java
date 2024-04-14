@@ -47,6 +47,7 @@ public class SecurityConfig {
                                         "/api/v1/send-mail-with-attachment")
                                 .permitAll()
                                 .requestMatchers("/api/v1/users/**").hasAnyAuthority("ADMIN", "USER", "PREMIUM")
+                                .requestMatchers("/api/v1/auth/get-me").hasAnyAuthority("ADMIN", "USER", "PREMIUM")
 //                                .requestMatchers("/api/v1/users/**").hasAuthority("USER")
                                 .anyRequest()
                                 .authenticated()

@@ -148,7 +148,6 @@ public class UserEntity implements UserDetails {
 
 //    -----------------------------------------------------------
 
-
 //    @OneToMany(mappedBy = "userEntity")
 //    private List<UserPurchasesEntity> userPurchasesEntities;
 //

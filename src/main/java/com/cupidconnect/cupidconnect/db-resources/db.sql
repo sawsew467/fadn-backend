@@ -4,7 +4,7 @@ USE cupid_connect;
 -- CREATE TABLE SQL 
 CREATE TABLE `profiles` (
                             `id` INT AUTO_INCREMENT PRIMARY KEY,
-                            `avatar` NVARCHAR(50) NULL,
+                            `avatar` NVARCHAR(255) NULL,
                             `intro` NVARCHAR(255) NULL,
                             `hobbies` NVARCHAR(255) NULL,
                             `work_at` NVARCHAR(100) NULL,
@@ -23,6 +23,10 @@ CREATE TABLE `roles` (
                          `id` INT AUTO_INCREMENT PRIMARY KEY,
                          `name` NVARCHAR(50) NOT NULL UNIQUE
 );
+CREATE TABLE `status` (
+                          `id` INT AUTO_INCREMENT PRIMARY KEY,
+                          `name` NVARCHAR(50) NOT NULL UNIQUE
+);
 CREATE TABLE `users` (
                          `id` INT AUTO_INCREMENT PRIMARY KEY,
                          `first_name` NVARCHAR(50) NOT NULL,
@@ -30,34 +34,31 @@ CREATE TABLE `users` (
                          `nickname` NVARCHAR(100) UNIQUE,
                          `password` VARCHAR(255) NOT NULL,
                          `gender_id` INT,
+                         `status_id` INT,
                          `email` VARCHAR(50) NOT NULL UNIQUE,
                          `phone` CHAR(15) UNIQUE,
-                         `address` NVARCHAR(200),
+                         `city` NVARCHAR(200),
                          `date_of_birth` DATE,
                          `fb_account_id` INT UNIQUE,
                          `google_account_id` INT UNIQUE,
-                         `confirmation_code` VARCHAR(255) UNIQUE,
-                         `confirmation_time` DATETIME,
+                         `confirmation_code` VARCHAR(255),
+                         `confirmation_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
                          `popularity` DECIMAL(5,2) DEFAULT 0,
                          `is_active` TINYINT(1) NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),
-                         `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                         `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                         `is_admin` TINYINT(1) NOT NULL DEFAULT 0 CHECK (is_admin IN (0,1)),
+                         `created_at` DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         `updated_at` DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                         `is_admin` TINYINT(1) DEFAULT 0 CHECK (is_admin IN (0,1)),
                          `role_id` INT,
                          `profile_id` INT,
                          FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`),
                          FOREIGN KEY (`gender_id`) REFERENCES `genders`(`id`),
                          FOREIGN KEY (`profile_id`) REFERENCES `profiles`(`id`),
+                         FOREIGN KEY (`status_id`) REFERENCES `status`(`id`),
                          KEY `Key` (`first_name`, `last_name`, `nickname`, `email`, `phone`)
 );
-CREATE TRIGGER before_insert_users
-    BEFORE INSERT ON users
-    FOR EACH ROW
-BEGIN
-    IF NEW.date_of_birth > CURDATE() THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The date of birth cannot be in the future.';
-    END IF;
-END;
+
+
+
 CREATE TABLE `social_accounts` (
                                    `id` INT AUTO_INCREMENT PRIMARY KEY,
                                    `provider` VARCHAR(20) NOT NULL,
@@ -71,8 +72,9 @@ CREATE TABLE `social_accounts` (
 CREATE TABLE `conversations` (
                                  `id` INT AUTO_INCREMENT PRIMARY KEY,
                                  `participant_1` INT NOT NULL,
-                                 `participant_2` INT NOT NULL,                                 `time_started` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                 `time_closed` TIMESTAMP NULL DEFAULT NULL,
+                                 `participant_2` INT NOT NULL,
+                                 `time_started` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                 `time_closed` DATETIME NULL DEFAULT NULL,
                                  status VARCHAR(50),
                                  `feedback_id` INT,
                                  FOREIGN KEY (`participant_1`) REFERENCES `users`(`id`),
@@ -94,7 +96,7 @@ CREATE TABLE notifications (
                                recipient_id INT NOT NULL, -- nguoi nhan
                                message TEXT NOT NULL, -- noi dung
                                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, -- thoi gian gui
-                               read_status BOOLEAN DEFAULT FALSE, -- trang thai doc
+                               read_statususer_resultspremium_packages BOOLEAN DEFAULT FALSE, -- trang thai doc
                                FOREIGN KEY (sender_id) REFERENCES users(id),
                                FOREIGN KEY (recipient_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -161,12 +163,15 @@ CREATE TABLE `interest_genders` (
 );
 CREATE TABLE `tokens` (
                           `id` INT AUTO_INCREMENT PRIMARY KEY,
-                          `token` VARCHAR(255) NOT NULL,
-                          `token_type` VARCHAR(50) NOT NULL,
-                          `revoked` TINYINT(1) NOT NULL,
-                          `expired` TINYINT(1) NOT NULL,
+                          `token` VARCHAR(255) NOT NULL, -- lưu trữ giá trị của token
+                          `token_type` VARCHAR(50) NOT NULL, -- ví dụ như JWT, OAuth token, etc.
+                          `revoked` TINYINT(1) NOT NULL, -- Biểu thị trạng thái của token, có giá trị là 0 hoặc 1, trong
+    -- đó 0 có nghĩa là token chưa bị thu hồi và 1 có nghĩa là token đã bị thu hồi.
+                          `expired` TINYINT(1) NOT NULL, -- Biểu thị trạng thái của token, với 0 cho biết token chưa hết hạn
+    -- và 1 cho biết token đã hết hạn.
                           `user_id` INT NOT NULL,
                           FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    --  Đảm bảo tính nhất quán khi xóa hoặc cập nhật các người dùng (chỉ sử dụng đc vs OneToMany, ManyToOne, còn lại thì dùng trigger hoặc xử lý logic trong mã ứng dụng)
                           KEY `Key` (`token`, `token_type`, `revoked`, `expired`)
 );
 CREATE TABLE `friend_requests` (
@@ -195,7 +200,7 @@ CREATE TABLE IF NOT EXISTS questions (
                                          question_id INT AUTO_INCREMENT PRIMARY KEY,
                                          question_text TEXT NOT NULL,
                                          question_type VARCHAR(255) -- Ví dụ: 'kiến tạo', 'trắc nghiệm'
-);
+    );
 
 -- Bảng cho các đáp án
 CREATE TABLE IF NOT EXISTS answers (
@@ -203,22 +208,22 @@ CREATE TABLE IF NOT EXISTS answers (
                                        question_id INT,
                                        answer_text TEXT NOT NULL,
                                        mbti_dimension VARCHAR(4), -- Ví dụ: 'E', 'I', 'N', 'S', 'T', 'F', 'J', 'P'
-                                       score INT,
-                                       FOREIGN KEY (question_id) REFERENCES questions(question_id)
-);
+    score INT,
+    FOREIGN KEY (question_id) REFERENCES questions(question_id)
+    );
 
 CREATE TABLE IF NOT EXISTS mbti_results (
-                                            mbti_type VARCHAR(4) PRIMARY KEY,
-                                            description TEXT NOT NULL
-);
+    mbti_type VARCHAR(4) PRIMARY KEY,
+    description TEXT NOT NULL
+    );
 CREATE TABLE IF NOT EXISTS user_results (
                                             result_id INT AUTO_INCREMENT PRIMARY KEY,
                                             user_id INT,
                                             mbti_type VARCHAR(4),
-                                            test_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                                            FOREIGN KEY (user_id) REFERENCES users(id),
-                                            FOREIGN KEY (mbti_type) REFERENCES mbti_results(mbti_type)
-);
+    test_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (mbti_type) REFERENCES mbti_results(mbti_type)
+    );
 
 -- Bảng cho các gói premium
 CREATE TABLE `premium_packages` (
@@ -264,20 +269,35 @@ CREATE TABLE `package_benefits` (
 INSERT INTO genders (name) VALUES ('Male'), ('Female'), ('Non-binary');
 
 -- Chèn dữ liệu vào bảng `roles`
-INSERT INTO roles (name) VALUES ('User'), ('Premium');
+INSERT INTO roles (name) VALUES ('USER'), ('PREMIUM');
+
+-- Chèn dữ liệu vào bảng `status`
+INSERT INTO status (name) VALUES ('Married'), ('Single'),('In a relationship');
 
 -- Chèn dữ liệu vào bảng `relationship_type`
 INSERT INTO relationship_type (name) VALUES ('Friendship'), ('Romantic'), ('Professional');
 
 -- Chèn dữ liệu vào bảng `profiles`
 INSERT INTO profiles (avatar, intro, hobbies, work_at) VALUES
-                                                           ('avatar1.jpg', 'Just a nerd who loves coding and cats.', 'Coding, cats', 'Tech Company'),
-                                                           ('avatar2.jpg', 'Outdoorsy type, love hiking and nature.', 'Hiking, nature', 'Outdoor Equipment Co');
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Hello! I am a software engineer.', 'Reading, hiking', 'ABC Company'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Hi there! I love painting and traveling.', 'Painting, traveling', 'XYZ Corporation'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Greetings! I am passionate about photography and cooking.', 'Photography, cooking', '123 Industries'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Hey! I am an avid gamer and movie buff.', 'Gaming, watching movies', 'DreamWorks'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Nice to meet you! I enjoy playing musical instruments.', 'Music, playing instruments', 'Tech Giants'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Hey everyone! I am a fitness enthusiast and yoga practitioner.', 'Fitness, yoga', 'HealthTech'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Hello world! I love gardening and DIY projects.', 'Gardening, DIY', 'Eco Solutions'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Greetings! I am a bookworm and a coffee addict.', 'Reading, coffee brewing', 'Caffeine Co.'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Hi folks! I am a foodie and a travel blogger.', 'Food blogging, traveling', 'Food Network'),
+                                                           ('https://cdn.sforum.vn/sforum/wp-content/uploads/2024/01/avartar-anime-21.jpg', 'Hey there! I am passionate about environmental conservation.', 'Environmental activism, hiking', 'Green Earth Movement');
 
-INSERT INTO users (first_name, last_name, nickname, password, gender_id, email, phone, address, date_of_birth, role_id, profile_id) VALUES
-                                                                                                                                        ('Jane', 'Doe', 'jdoe', 'password123', 2, 'jane.doe@example.com', '1234567890', '123 Main St, Anytown, USA', '1990-01-01', 1, 1),
-                                                                                                                                        ('John', 'Smith', 'jsmith', 'password456', 1, 'john.smith@example.com', '0987654321', '456 Main St, Anytown, USA', '1988-12-31', 1, 2);
-
+-- Không cần insert `created_at`, `updated_at`
+INSERT INTO users (first_name, last_name, nickname, password, gender_id, status_id, email, phone, city, date_of_birth, fb_account_id, google_account_id, confirmation_code, confirmation_time, role_id, profile_id, is_admin) VALUES
+                                                                                                                                                                                                                                  ('Phạm', 'Ngọc Huy', 'huyngoc612', '$2a$10$W3JjuqYBu6RAVtErM2.2XerapQydx86fA3JzPskERpFqKpDg.V5pq', 2, 1, 'admin@gmail.com', '1234567890', 'Đà Nẵng', '1990-01-01', 378751502, 923224211, '515954774', '2024-03-14 09:01:29', 1, 1, 1),
+                                                                                                                                                                                                                                  ('John', 'Smith', 'jsmith', '$2a$10$W3JjuqYBu6RAVtErM2.2XerapQydx86fA3JzPskERpFqKpDg.V5pq', 1, 2, 'user@gmail.com', '0987654321', 'Hà Nội', '1988-12-31', 944367918, 986834188, '885359003', '2024-03-14 09:01:29', 1, 2, 0),
+( 'Tran Van', 'Bao Thang', 'thangtvb', '$2a$10$xt/IJEl4nlSmiX/MzH5FvO.PlUloJpqyk3cf35GyU4VkX0/u35rMK', 1, 1, 'thangtvb.dev@gmail.com', '0828828497', '1808 Evans Junction', '2009-03-04', '320793441', '308998107', '898120286', '2024-03-16 03:06:19', 1, 3, 0),
+    ( 'Nhat Anh', 'Nguyen', 'anhnn1111', '$2a$10$Ag10StFk3cwTFQzD0m5sP.tG2sVmp9S90mIUkcBkG4anshB8RF4ue', 1, 1, 'anhnn1111@gmail.com', '0828828498', '1808 Evans Junction', '2009-03-04', '320793444', '308998109', '898120289', '2024-03-16 03:07:48', 1, 7, 0),
+    ( 'Vo Thi', 'Thuy Suong', 'suongdethuong', '$2a$10$UpNODmhi5/1xfymYMTLqk.xXJMU7Jbx9PUi3Fs5urcAu859xIVjI.', 1,1, 'suongdethuong@gmail.com', '345-609-7169', '1808 Evans Junction', '2009-03-04', '320792441', '308198107', '898120386', '2024-03-16 09:10:51', 1, 8, 0),
+    ( 'Gladys', 'Crooks', 'sawsew467', '$2a$10$WFn5oBY5cIQ4bIhE68oG2u9CCBzATQtosNzJBaTXwv7zvjz0yAakW', 2, 1,'bao.thang.1912@gmail.com', '345-609-7103', '1808 Evans Junction', '2003-03-04', '320713441', '318998107', '298120286', '2024-04-04 16:20:23', 1, 10, 0);
 -- Chèn dữ liệu vào bảng `feedbacks`
 INSERT INTO feedbacks (description, rate) VALUES
                                               ('Great experience', 5),
@@ -333,6 +353,32 @@ INSERT INTO package_benefits (package_id, benefit_description) VALUES
                                                                    (3, 'Access to all premium features available.');
 
 
-select * from users
+-- select * from users
 
+-- DELIMITER //
 
+-- CREATE TRIGGER before_insert_update_users
+-- BEFORE INSERT ON users
+-- FOR EACH ROW
+-- BEGIN
+-- 	IF NEW.confirmation_time IS NULL THEN
+--         SET NEW.confirmation_time = CURRENT_TIMESTAMP;
+--     END IF;
+--     IF NEW.created_at IS NULL THEN
+--         SET NEW.created_at = CURRENT_TIMESTAMP;
+--     END IF;
+--     IF NEW.updated_at IS NULL THEN
+--         SET NEW.updated_at = CURRENT_TIMESTAMP;
+--     END IF;
+-- END;
+-- //
+
+-- CREATE TRIGGER before_update_users
+-- BEFORE UPDATE ON users
+-- FOR EACH ROW
+-- BEGIN
+--     IF NEW.updated_at IS NULL OR NEW.updated_at <=> OLD.updated_at THEN
+--         SET NEW.updated_at = CURRENT_TIMESTAMP;
+--     END IF;
+-- END;
+-- //
