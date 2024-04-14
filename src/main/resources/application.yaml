@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/cupid_connect?useSSL=false&serverTimezone=UTC
     username: root
-    password: Baothang@1912
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -38,6 +38,8 @@ server:
 logging:
   level:
     root: info
+
+
 
 api:
   prefix: api/v1

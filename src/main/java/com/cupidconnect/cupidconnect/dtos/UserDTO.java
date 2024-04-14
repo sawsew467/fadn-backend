@@ -81,19 +81,19 @@ public class UserDTO {
 
     private Integer isActive;
 
-//    @NotNull(message = "Create_at is required !") -> Not null khi lưu trong DB, ko phải gửi lên
+    //    @NotNull(message = "Create_at is required !") -> Not null khi lưu trong DB, ko phải gửi lên
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date createdAt;
 
-//    @NotNull(message = "Updated_at is required !") -> Not null khi lưu trong DB, ko phải gửi lên
+    //    @NotNull(message = "Updated_at is required !") -> Not null khi lưu trong DB, ko phải gửi lên
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date updatedAt;
 
     private Integer isAdmin;
 
-//    @NotNull(message = "Role_id is required !") -> Not null khi lưu trong DB, ko phải gửi lên
+    //    @NotNull(message = "Role_id is required !") -> Not null khi lưu trong DB, ko phải gửi lên
     private RoleDTO roleDTO; // Foreign key 'role_id'
-    
+
     private ProfileDTO profileDTO; // Foreign key 'profile_id'
 
     private List<InterestGenderDTO> interestGenders;

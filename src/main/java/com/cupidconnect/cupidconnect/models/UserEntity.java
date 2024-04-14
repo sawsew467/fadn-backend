@@ -148,7 +148,6 @@ public class UserEntity implements UserDetails {
 
 //    -----------------------------------------------------------
 
-//
 //    @OneToMany(mappedBy = "userEntity")
 //    private List<UserPurchasesEntity> userPurchasesEntities;
 //
@@ -194,8 +193,8 @@ public class UserEntity implements UserDetails {
 //    @OneToMany(mappedBy = "userReceived")
 //    private List<GradeEntity> receivedGrades;
 //
-//    @OneToMany(mappedBy = "user")
-//    private List<InterestGenderEntity> interestGenders;
+    @OneToMany(mappedBy = "user")
+    private List<InterestGenderEntity> interestGenders;
 
 
     @Override
