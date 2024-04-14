@@ -149,51 +149,51 @@ public class UserEntity implements UserDetails {
 //    -----------------------------------------------------------
 
 
-    @OneToMany(mappedBy = "userEntity")
-    private List<UserPurchasesEntity> userPurchasesEntities;
-
-    @OneToMany(mappedBy = "toId")
-    private List<FriendRequestEntity> toUsers;
-    @OneToMany(mappedBy = "fromId")
-    private List<FriendRequestEntity> fromUser;
-
-    @OneToMany(mappedBy = "senderId")
-    private List<NotificationEntity> senderId;
-    @OneToMany(mappedBy = "recipientId")
-    private List<NotificationEntity> recipientId;
-
-    @OneToMany(mappedBy = "userId")
-    private List<FriendEntity> userId;
-    @OneToMany(mappedBy = "friendId")
-    private List<FriendEntity> friendId;
-
-    @OneToMany(mappedBy = "fromUser")
-    private List<MessageEntity> messageFromUser;
-    @OneToMany(mappedBy = "toUser")
-    private List<MessageEntity> messageToUser;
-
-    @OneToMany(mappedBy = "userId")
-    private List<UserPhotoEntity> userPhotos;
-
-    @OneToMany(mappedBy = "userId")
-    private List<SocialAccountEntity> socialAccount;
-
-    // --
-    @OneToMany(mappedBy = "userId")
-    private List<BlockEntity> blocks;
-    @OneToMany(mappedBy = "userBlocked")
-    private List<BlockEntity> blockedByOthers;
-
-    @OneToMany(mappedBy = "participant1")
-    private List<ConversationEntity> conversationsAsParticipant1;
-    @OneToMany(mappedBy = "participant2")
-    private List<ConversationEntity> conversationsAsParticipant2;
-
-    @OneToMany(mappedBy = "user")
-    private List<GradeEntity> givenGrades;
-    @OneToMany(mappedBy = "userReceived")
-    private List<GradeEntity> receivedGrades;
-
+//    @OneToMany(mappedBy = "userEntity")
+//    private List<UserPurchasesEntity> userPurchasesEntities;
+//
+//    @OneToMany(mappedBy = "toId")
+//    private List<FriendRequestEntity> toUsers;
+//    @OneToMany(mappedBy = "fromId")
+//    private List<FriendRequestEntity> fromUser;
+//
+//    @OneToMany(mappedBy = "senderId")
+//    private List<NotificationEntity> senderId;
+//    @OneToMany(mappedBy = "recipientId")
+//    private List<NotificationEntity> recipientId;
+//
+//    @OneToMany(mappedBy = "userId")
+//    private List<FriendEntity> userId;
+//    @OneToMany(mappedBy = "friendId")
+//    private List<FriendEntity> friendId;
+//
+//    @OneToMany(mappedBy = "fromUser")
+//    private List<MessageEntity> messageFromUser;
+//    @OneToMany(mappedBy = "toUser")
+//    private List<MessageEntity> messageToUser;
+//
+//    @OneToMany(mappedBy = "userId")
+//    private List<UserPhotoEntity> userPhotos;
+//
+//    @OneToMany(mappedBy = "userId")
+//    private List<SocialAccountEntity> socialAccount;
+//
+//    // --
+//    @OneToMany(mappedBy = "userId")
+//    private List<BlockEntity> blocks;
+//    @OneToMany(mappedBy = "userBlocked")
+//    private List<BlockEntity> blockedByOthers;
+//
+//    @OneToMany(mappedBy = "participant1")
+//    private List<ConversationEntity> conversationsAsParticipant1;
+//    @OneToMany(mappedBy = "participant2")
+//    private List<ConversationEntity> conversationsAsParticipant2;
+//
+//    @OneToMany(mappedBy = "user")
+//    private List<GradeEntity> givenGrades;
+//    @OneToMany(mappedBy = "userReceived")
+//    private List<GradeEntity> receivedGrades;
+//
     @OneToMany(mappedBy = "user")
     private List<InterestGenderEntity> interestGenders;
 
