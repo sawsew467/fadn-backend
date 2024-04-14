@@ -90,7 +90,6 @@ public class RoomController {
         try {
             String token = authToken.substring("Bearer ".length());
             String userId = jwtService.extractUserId(token);
-            System.out.println("userId: "+userId);
             JsonNode bodyJson = objectMapper.readTree(requestBody);
 
             int filterGender = bodyJson.get("genderId").asInt();

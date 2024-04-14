@@ -25,6 +25,10 @@ public class JwtServiceImpl implements JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public String extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", String.class));
+    }
+
     @Override
     public boolean isValid(String token, UserDetails user) {
         String username = extractUsername(token);
@@ -55,10 +59,6 @@ public class JwtServiceImpl implements JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-    }
-
-    public String extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
     @Override
